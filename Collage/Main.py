@@ -145,11 +145,20 @@ def SplitImage(image, size):
             subImages += [SubImage(image[x*size:x*size+size, y*size:y*size+size])]
     return subImages
 
-
-def Run():
-
+def Setup():
     scaleFactor = int(input("scale factor: "))
-    cap = cv2.VideoCapture(1)
+
+    if input("from video(V) from WebCam(C): ").upper() == "V":
+        address = "VideoInput\\"+os.listdir("VideoInput")[0]
+        cap = cv2.VideoCapture(address)
+    else:
+        cap = cv2.VideoCapture(1)
+
+    Run(scaleFactor, cap)
+    return
+
+
+def Run(scaleFactor, cap):
 
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
@@ -172,6 +181,8 @@ def Run():
         timeMark = time.time()
 
         ret, frame = cap.read()
+        if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
+            break
         frame = cv2.flip(frame, 1)
         cv2.imshow('Frame', frame)
 
@@ -189,11 +200,9 @@ def Run():
 
         #print("Took: "+str(time.time()-timeMark))
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
     cap.release()
     cv2.destroyAllWindows()
     return
 
-Run()
+
+Setup()
