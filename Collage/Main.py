@@ -147,6 +147,8 @@ def SplitImage(image, size):
 
 
 def Run():
+
+    scaleFactor = int(input("scale factor: "))
     cap = cv2.VideoCapture(1)
 
     ret, frame = cap.read()
@@ -175,9 +177,9 @@ def Run():
 
         targetImage = cv2.resize(frame, (fullH, fullW))
 
-        size = cv2.getTrackbarPos('Size','Image')*10
-        if size < 10:
-            size = 10
+        size = cv2.getTrackbarPos('Size','Image')*scaleFactor
+        if size < scaleFactor:
+            size = scaleFactor
 
         if size > fullW or size > fullH:
             size = min(fullH, fullW)
