@@ -154,11 +154,12 @@ def Setup():
     else:
         cap = cv2.VideoCapture(1)
 
-    Run(scaleFactor, cap)
+    recordVideo = input("record video (T/F)").upper() == "T"
+    Run(scaleFactor, cap, recordVideo)
     return
 
 
-def Run(scaleFactor, cap):
+def Run(scaleFactor, cap, recordVideo):
 
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
@@ -172,17 +173,15 @@ def Run(scaleFactor, cap):
     subImages = LoadSubImages()
     imageMaker = ImageMaker(subImages)
 
+    if recordVideo:
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+        rec = cv2.VideoWriter("output.avi", fourcc, 17, (fullH, fullW))
 
     cv2.namedWindow('Image')
     cv2.createTrackbar('Size','Image',20,100,nothing)
 
-    ret = True
     while(ret):
         timeMark = time.time()
-
-        ret, frame = cap.read()
-        if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
-            break
         frame = cv2.flip(frame, 1)
         cv2.imshow('Frame', frame)
 
@@ -196,10 +195,20 @@ def Run(scaleFactor, cap):
             size = min(fullH, fullW)
 
         #imageMaker.UpdateSubImages(SplitImage(targetImage, size))
-        cv2.imshow('Image', TestShow(imageMaker, targetImage, size, fullW, fullH))
+        outputImage = TestShow(imageMaker, targetImage, size, fullW, fullH)
+        cv2.imshow('Image', outputImage)
 
         #print("Took: "+str(time.time()-timeMark))
 
+        if recordVideo:
+            rec.write(outputImage)
+
+        ret, frame = cap.read()
+        if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
+            break
+    
+    if recordVideo:
+        rec.release()
     cap.release()
     cv2.destroyAllWindows()
     return
