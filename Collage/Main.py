@@ -146,21 +146,19 @@ def SplitImage(image, size):
     return subImages
 
 def Setup():
-    scaleFactor = int(input("scale factor: "))
-
-    if input("from video(V) from WebCam(C): ").upper() == "V":
-        address = "VideoInput\\"+os.listdir("VideoInput")[0]
-        cap = cv2.VideoCapture(address)
-    else:
-        cap = cv2.VideoCapture(1)
-
-    recordVideo = input("record video (T/F)").upper() == "T"
-    Run(scaleFactor, cap, recordVideo)
+    # if input("from video(V) from WebCam(C): ").upper() == "V":
+    #     address = "VideoInput\\"+os.listdir("VideoInput")[0]
+    #     cap = cv2.VideoCapture(address)
+    # else:
+    #     cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0)
+    recordVideo = False #input("record video (T/F)").upper() == "T"
+    Run(cap, recordVideo)
     return
 
 
-def Run(scaleFactor, cap, recordVideo):
-
+def Run(cap, recordVideo):
+    scaleFactor = 5
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
     fullW = frame.shape[0]
