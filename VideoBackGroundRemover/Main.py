@@ -7,58 +7,24 @@ import time
 
 
 class BackgroundRemover:
-	MaxErrorAllowed = 0.2
-	ErrorDataBatchSize = 6
-	ErrorMaskBlurValue = 15
-
-	def __init__(self):
-		path = "Images//"
-		targetImagePath = path + "targetImage.jpg"
-		backGroundImagePath = path + "backGroundImage.jpg"
-		newBackgroundImagePath = path + "newBackgroundImage.jpg"
-
-		self.OutputPath = path + "Output.jpg"
-
-		print(os.path.exists(targetImagePath))
-		print(os.path.exists(backGroundImagePath))
-		print(os.path.exists(newBackgroundImagePath))
-
-		fullW, fullH = 1080, 1920
-
-		targetImage = cv2.imread(targetImagePath)
-		backGroundImage = cv2.imread(backGroundImagePath)
-		newBackgroundImage = cv2.imread(newBackgroundImagePath)
-
-		self.TargetImage = cv2.resize(targetImage, (fullH, fullW))
-		self.BackGroundImage = cv2.resize(backGroundImage, (fullH, fullW))
-		self.NewBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
+	def __init__(self, maxErrorAllowed=None, errorDataBatchSize=6, errorMaskBlurValue=15):
+		self.MaxErrorAllowed = maxErrorAllowed
+		self.ErrorDataBatchSize = errorDataBatchSize
+		self.ErrorMaskBlurValue = errorMaskBlurValue
 		return
 	
-	def ReplaceBackGround(self):
+	def ReplaceBackGround(self, targetImage, backGroundImage, newBackgroundImage):
+		self.TargetImage = targetImage
+		self.BackGroundImage = backGroundImage
+		self.NewBackgroundImage = newBackgroundImage
 
-		totalTook = time.time()
-		
-		timeMark = time.time()
 		self.GetErrorData()
-		getErrorDataTime = time.time()- timeMark
-		
-		self.PredictMaxErrorAllowed()
 
-		timeMark = time.time()
+		if self.MaxErrorAllowed == None:
+			self.PredictMaxErrorAllowed()
+			
 		self.CutOut()
-		CutOutTime = time.time()- timeMark
-
-		totalTook = time.time()-totalTook
-
-		cv2.imwrite(self.OutputPath, self.OutputImage)
-
-		print("getErrorDataTime: ", getErrorDataTime)
-		print("CutOutTime: ", CutOutTime)
-		if totalTook > 0:
-			print("FPS: ", 1/totalTook)
-		print("MaxErrorAllowed used: ", self.MaxErrorAllowed)
-		self.Show()
-		return
+		return self.OutputImage
 
 	def GetErrorData(self):
 		fullH = self.TargetImage.shape[0]
@@ -95,7 +61,7 @@ class BackgroundRemover:
 	def Show(self):
 		cv2.imshow('errorMapImg', self.ErrorMapImg)
 		cv2.imshow('outputImage', self.OutputImage)
-		#self.ShowErrorPlot()
+		self.ShowErrorPlot()
 		cv2.waitKey(0)
 		return
 
@@ -104,10 +70,39 @@ class BackgroundRemover:
 		plt.show()
 		return
 
+
 if __name__ == "__main__":
 	try:
+
+		path = "Images//"
+		targetImagePath = path + "targetImage.jpg"
+		backGroundImagePath = path + "backGroundImage.jpg"
+		newBackgroundImagePath = path + "newBackgroundImage.jpg"
+
+		targetImage = cv2.imread(targetImagePath)
+		backGroundImage = cv2.imread(backGroundImagePath)
+		newBackgroundImage = cv2.imread(newBackgroundImagePath)
+
+		
+		fullW = targetImage.shape[0]
+		fullH = targetImage.shape[1]
+		fullW, fullH = 1080, 1920
+
+		targetImage = cv2.resize(targetImage, (fullH, fullW))
+		backGroundImage = cv2.resize(backGroundImage, (fullH, fullW))
+		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
+
 		backgroundRemover = BackgroundRemover()
-		backgroundRemover.ReplaceBackGround()
+
+		totalTook = time.time()
+		outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
+		totalTook = time.time()-totalTook
+
+		if totalTook > 0:
+			print("FPS: ", 1/totalTook)
+		cv2.imshow('outputImage', outputImage)
+		cv2.waitKey(0)
+	
 
 	except Exception as e:
 		strTrace = traceback.format_exc()
