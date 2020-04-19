@@ -2,15 +2,14 @@ import traceback
 import cv2
 import numpy as np
 import os
-import LoadingBar
 import matplotlib.pyplot as plt
 import time
 
 
 class BackgroundRemover:
 	MaxErrorAllowed = 0.2
-	ErrorDataBatchSize = 4
-	ErrorMaskBlurValue = 25
+	ErrorDataBatchSize = 6
+	ErrorMaskBlurValue = 15
 
 	def __init__(self):
 		path = "Images//"
@@ -82,16 +81,10 @@ class BackgroundRemover:
 
 	def PredictMaxErrorAllowed(self):
 		mean = np.mean(np.array(self.Errors))
-		median = np.median(np.array(self.Errors))
-		print("mean: ", mean)
-		print("median: ", median)
 		self.MaxErrorAllowed = mean
 		return
 
 	def CutOut(self):
-		high = self.TargetImage.shape[0]
-		width = self.TargetImage.shape[1]
-
 		ret, mask = cv2.threshold(self.ErrorMapImg, self.MaxErrorAllowed, 255, cv2.THRESH_BINARY)
 		mask_inv = cv2.bitwise_not(mask)
 		img1_bg = cv2.bitwise_and(self.NewBackgroundImage, self.NewBackgroundImage, mask=mask_inv)
