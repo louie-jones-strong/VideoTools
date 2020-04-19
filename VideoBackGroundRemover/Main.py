@@ -92,21 +92,11 @@ class BackgroundRemover:
 		high = self.TargetImage.shape[0]
 		width = self.TargetImage.shape[1]
 
-		if type(self.NewBackgroundImage) == None:
-			self.OutputImage = np.zeros((high, width, 3), np.uint8)
-		else:
-			self.OutputImage = self.NewBackgroundImage.copy()
-
-		loadingBar = LoadingBar.LoadingBar()
-		loadingBar.Setup("Calculating", high)
-		
-		for x in range(high):
-			for y in range(width):
-
-				if self.ErrorMapImg[x][y] > self.MaxErrorAllowed:
-					self.OutputImage[x][y] = self.TargetImage[x][y]
-
-			loadingBar.Update(x)
+		ret, mask = cv2.threshold(self.ErrorMapImg, self.MaxErrorAllowed, 255, cv2.THRESH_BINARY)
+		mask_inv = cv2.bitwise_not(mask)
+		img1_bg = cv2.bitwise_and(self.NewBackgroundImage, self.NewBackgroundImage, mask=mask_inv)
+		img2_fg = cv2.bitwise_and(self.TargetImage, self.TargetImage, mask=mask)
+		self.OutputImage = cv2.add(img1_bg,img2_fg)
 		return
 
 	def Show(self):
