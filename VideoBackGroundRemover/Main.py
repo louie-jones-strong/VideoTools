@@ -43,6 +43,8 @@ class BackgroundRemover:
 		errorMapImg = cv2.absdiff(targetImage, backGroundImage)
 		errorMapImg = cv2.cvtColor(errorMapImg, cv2.COLOR_BGR2GRAY)
 
+		self.RawErrorImg = cv2.resize(errorMapImg, (fullW, fullH))
+
 		errorMapImg = cv2.medianBlur(errorMapImg, self.ErrorMaskBlurValue)
 
 		self.Errors = errorMapImg.flatten()
@@ -63,6 +65,8 @@ class BackgroundRemover:
 		return
 
 	def Show(self):
+		print("MaxErrorAllowed: ", self.MaxErrorAllowed)
+		cv2.imshow('RawErrorImg', self.RawErrorImg)
 		cv2.imshow('errorMapImg', self.ErrorMapImg)
 		cv2.imshow('outputImage', self.OutputImage)
 		self.ShowErrorPlot()
@@ -96,7 +100,7 @@ if __name__ == "__main__":
 		backGroundImage = cv2.resize(backGroundImage, (fullH, fullW))
 		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
 
-		backgroundRemover = BackgroundRemover()
+		backgroundRemover = BackgroundRemover(30)
 
 		totalTook = time.time()
 		outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
@@ -104,8 +108,7 @@ if __name__ == "__main__":
 
 		if totalTook > 0:
 			print("FPS: ", 1/totalTook)
-		cv2.imshow('outputImage', outputImage)
-		cv2.waitKey(0)
+		backgroundRemover.Show()
 	
 
 	except Exception as e:
