@@ -33,15 +33,15 @@ class BackgroundRemover:
 		self.GetErrorData()
 		self.PredictMaxErrorAllowed()
 
-		while True:
-			self.CutOut()
-			print("MaxErrorAllowed used: ", self.MaxErrorAllowed)
-			self.Show()
-			userInput = input("set MaxErrorAllowed: ")
-			try:
-				self.MaxErrorAllowed = float(userInput)
-			except Exception as e:
-				break
+		#while True:
+		self.CutOut()
+		print("MaxErrorAllowed used: ", self.MaxErrorAllowed)
+		self.Show()
+			# userInput = input("set MaxErrorAllowed: ")
+			# try:
+			# 	self.MaxErrorAllowed = float(userInput)
+			# except Exception as e:
+			# 	break
 
 		return
 
@@ -53,24 +53,23 @@ class BackgroundRemover:
 		loadingBar.Setup("Gettting Error Data", high)
 
 		self.ErrorMapImg = np.zeros((high, width, 3), np.uint8)
-		self.Errors = []
 		for x in range(high):
 			for y in range(width):
 
 				pixelError = self.GetColourError(self.TargetImage[x][y], self.BackGroundImage[x][y])
-				self.Errors += [pixelError]
-				self.ErrorMapImg[x][y] = [pixelError*255, pixelError*255, pixelError*255]
+				self.ErrorMapImg[x][y] = pixelError
 
 			loadingBar.Update(x)
 
 		self.ErrorMapImg = cv2.medianBlur(self.ErrorMapImg,25)
+		self.Errors = self.ErrorMapImg.flatten()
 		return
 
 	def GetColourError(self, colour1, colour2):
 		error = abs(int(colour1[0])-int(colour2[0]))
 		error += abs(int(colour1[1])-int(colour2[1]))
 		error += abs(int(colour1[2])-int(colour2[2]))
-		return error/(255*3)
+		return error/3
 
 	def PredictMaxErrorAllowed(self):
 		mean = np.mean(np.array(self.Errors))
@@ -92,7 +91,7 @@ class BackgroundRemover:
 		for x in range(high):
 			for y in range(width):
 
-				if self.ErrorMapImg[x][y][2]/255 > self.MaxErrorAllowed:
+				if self.ErrorMapImg[x][y][0] > self.MaxErrorAllowed:
 					self.OutputImage[x][y] = self.TargetImage[x][y]
 
 				elif type(self.NewBackgroundImage) != None:
