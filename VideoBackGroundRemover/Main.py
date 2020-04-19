@@ -13,11 +13,15 @@ class BackgroundRemover:
 		self.ErrorMaskBlurValue = errorMaskBlurValue
 		return
 	
-	def ReplaceBackGround(self, targetImage, backGroundImage, newBackgroundImage):
+	def ReplaceBackGround(self, targetImage, backGroundImage, newBackgroundImage=None):
 		self.TargetImage = targetImage
 		self.BackGroundImage = backGroundImage
-		self.NewBackgroundImage = newBackgroundImage
 
+		self.NewBackgroundImage = newBackgroundImage
+		if type(self.NewBackgroundImage) == type(None):
+			fullW = targetImage.shape[0]
+			fullH = targetImage.shape[1]
+			self.NewBackgroundImage = np.zeros((fullW, fullH, 3), np.uint8)
 		self.GetErrorData()
 
 		if self.MaxErrorAllowed == None:
