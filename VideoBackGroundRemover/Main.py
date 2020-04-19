@@ -4,10 +4,13 @@ import numpy as np
 import os
 import LoadingBar
 import matplotlib.pyplot as plt
+import time
 
 
 class BackgroundRemover:
 	MaxErrorAllowed = 0.2
+	ErrorDataBatchSize = 4
+	ErrorMaskBlurValue = 25
 
 	def __init__(self):
 		path = "Images//"
@@ -30,39 +33,40 @@ class BackgroundRemover:
 		return
 	
 	def ReplaceBackGround(self):
+
+		timeMark = time.time()
 		self.GetErrorData()
+		getErrorDataTime = time.time()- timeMark
+		
 		self.PredictMaxErrorAllowed()
 
-		#while True:
+		timeMark = time.time()
 		self.CutOut()
+		CutOutTime = time.time()- timeMark
+
+		print("getErrorDataTime: ", getErrorDataTime)
+		print("CutOutTime: ", CutOutTime)
 		print("MaxErrorAllowed used: ", self.MaxErrorAllowed)
 		self.Show()
-			# userInput = input("set MaxErrorAllowed: ")
-			# try:
-			# 	self.MaxErrorAllowed = float(userInput)
-			# except Exception as e:
-			# 	break
-
 		return
 
 	def GetErrorData(self):
-		high = self.TargetImage.shape[0]
-		width = self.TargetImage.shape[1]
+		fullH = self.TargetImage.shape[0]
+		fullW = self.TargetImage.shape[1]
 		
-		loadingBar = LoadingBar.LoadingBar()
-		loadingBar.Setup("Gettting Error Data", high)
+		newHigh = int(fullH/self.ErrorDataBatchSize)
+		newWidth = int(fullW/self.ErrorDataBatchSize)
 
-		self.ErrorMapImg = np.zeros((high, width, 3), np.uint8)
-		for x in range(high):
-			for y in range(width):
+		targetImage = cv2.resize(self.TargetImage, (newWidth, newHigh))
+		backGroundImage = cv2.resize(self.BackGroundImage, (newWidth, newHigh))
 
-				pixelError = self.GetColourError(self.TargetImage[x][y], self.BackGroundImage[x][y])
-				self.ErrorMapImg[x][y] = pixelError
+		errorMapImg = cv2.absdiff(targetImage, backGroundImage)
+		errorMapImg = cv2.cvtColor(errorMapImg, cv2.COLOR_BGR2GRAY)
 
-			loadingBar.Update(x)
+		errorMapImg = cv2.medianBlur(errorMapImg, self.ErrorMaskBlurValue)
 
-		self.ErrorMapImg = cv2.medianBlur(self.ErrorMapImg,25)
-		self.Errors = self.ErrorMapImg.flatten()
+		self.Errors = errorMapImg.flatten()
+		self.ErrorMapImg = cv2.resize(errorMapImg, (fullW, fullH))
 		return
 
 	def GetColourError(self, colour1, colour2):
@@ -83,7 +87,10 @@ class BackgroundRemover:
 		high = self.TargetImage.shape[0]
 		width = self.TargetImage.shape[1]
 
-		self.OutputImage = np.zeros((high, width, 3), np.uint8)
+		if type(self.NewBackgroundImage) == None:
+			self.OutputImage = np.zeros((high, width, 3), np.uint8)
+		else:
+			self.OutputImage = self.NewBackgroundImage.copy()
 
 		loadingBar = LoadingBar.LoadingBar()
 		loadingBar.Setup("Calculating", high)
@@ -91,11 +98,8 @@ class BackgroundRemover:
 		for x in range(high):
 			for y in range(width):
 
-				if self.ErrorMapImg[x][y][0] > self.MaxErrorAllowed:
+				if self.ErrorMapImg[x][y] > self.MaxErrorAllowed:
 					self.OutputImage[x][y] = self.TargetImage[x][y]
-
-				elif type(self.NewBackgroundImage) != None:
-					self.OutputImage[x][y] = self.NewBackgroundImage[x][y]
 
 			loadingBar.Update(x)
 		return
