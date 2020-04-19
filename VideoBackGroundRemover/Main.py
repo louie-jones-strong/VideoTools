@@ -17,6 +17,9 @@ class BackgroundRemover:
 		targetImagePath = path + "targetImage.jpg"
 		backGroundImagePath = path + "backGroundImage.jpg"
 		newBackgroundImagePath = path + "newBackgroundImage.jpg"
+
+		self.OutputPath = path + "Output.jpg"
+
 		print(os.path.exists(targetImagePath))
 		print(os.path.exists(backGroundImagePath))
 		print(os.path.exists(newBackgroundImagePath))
@@ -34,6 +37,8 @@ class BackgroundRemover:
 	
 	def ReplaceBackGround(self):
 
+		totalTook = time.time()
+		
 		timeMark = time.time()
 		self.GetErrorData()
 		getErrorDataTime = time.time()- timeMark
@@ -44,8 +49,14 @@ class BackgroundRemover:
 		self.CutOut()
 		CutOutTime = time.time()- timeMark
 
+		totalTook = time.time()-totalTook
+
+		cv2.imwrite(self.OutputPath, self.OutputImage)
+
 		print("getErrorDataTime: ", getErrorDataTime)
 		print("CutOutTime: ", CutOutTime)
+		if totalTook > 0:
+			print("FPS: ", 1/totalTook)
 		print("MaxErrorAllowed used: ", self.MaxErrorAllowed)
 		self.Show()
 		return
@@ -94,7 +105,7 @@ class BackgroundRemover:
 
 		loadingBar = LoadingBar.LoadingBar()
 		loadingBar.Setup("Calculating", high)
-
+		
 		for x in range(high):
 			for y in range(width):
 
