@@ -80,12 +80,6 @@ class BackgroundRemover:
 		self.ErrorMapImg = cv2.resize(errorMapImg, (fullW, fullH))
 		return
 
-	def GetColourError(self, colour1, colour2):
-		error = abs(int(colour1[0])-int(colour2[0]))
-		error += abs(int(colour1[1])-int(colour2[1]))
-		error += abs(int(colour1[2])-int(colour2[2]))
-		return error/3
-
 	def PredictMaxErrorAllowed(self):
 		mean = np.mean(np.array(self.Errors))
 		median = np.median(np.array(self.Errors))
@@ -118,7 +112,7 @@ class BackgroundRemover:
 	def Show(self):
 		cv2.imshow('errorMapImg', self.ErrorMapImg)
 		cv2.imshow('outputImage', self.OutputImage)
-		self.ShowErrorPlot()
+		#self.ShowErrorPlot()
 		cv2.waitKey(0)
 		return
 
