@@ -103,13 +103,27 @@ if __name__ == "__main__":
 
 		backgroundRemover = BackgroundRemover()
 
-		totalTook = time.time()
-		outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
-		totalTook = time.time()-totalTook
+		# totalTook = time.time()
+		# outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
+		# totalTook = time.time()-totalTook
 
-		if totalTook > 0:
-			print("FPS: ", 1/totalTook)
-		backgroundRemover.Show()
+		# if totalTook > 0:
+		# 	print("FPS: ", 1/totalTook)
+		# backgroundRemover.Show()
+
+		cap = cv2.VideoCapture(1)
+		for loop in range(100):
+			ret, backGroundImage = cap.read()
+		fullW = backGroundImage.shape[0]
+		fullH = backGroundImage.shape[1]
+		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
+		while True:
+			ret, frame = cap.read()
+
+			outputImage = backgroundRemover.ReplaceBackGround(frame, backGroundImage, newBackgroundImage)
+			cv2.imshow('outputImage', outputImage)
+			cv2.waitKey(1)
+
 	
 
 	except Exception as e:
