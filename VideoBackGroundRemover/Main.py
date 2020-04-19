@@ -8,7 +8,7 @@ import time
 
 class BackgroundRemover:
 	def __init__(self, maxErrorAllowed=None, errorDataBatchSize=6, errorMaskBlurValue=15):
-		self.MaxErrorAllowed = maxErrorAllowed
+		self.MaxErrorAllowedOverRide = maxErrorAllowed
 		self.ErrorDataBatchSize = errorDataBatchSize
 		self.ErrorMaskBlurValue = errorMaskBlurValue
 		return
@@ -24,8 +24,10 @@ class BackgroundRemover:
 			self.NewBackgroundImage = np.zeros((fullW, fullH, 3), np.uint8)
 		self.GetErrorData()
 
-		if self.MaxErrorAllowed == None:
+		if self.MaxErrorAllowedOverRide == None:
 			self.PredictMaxErrorAllowed()
+		else:
+			self.MaxErrorAllowed = MaxErrorAllowedOverRide
 			
 		self.CutOut()
 		return self.OutputImage
@@ -40,20 +42,25 @@ class BackgroundRemover:
 		targetImage = cv2.resize(self.TargetImage, (newWidth, newHigh))
 		backGroundImage = cv2.resize(self.BackGroundImage, (newWidth, newHigh))
 
+		targetImage = cv2.cvtColor(targetImage, cv2.COLOR_BGR2HSV)
+		backGroundImage = cv2.cvtColor(backGroundImage, cv2.COLOR_BGR2HSV)
+
 		errorMapImg = cv2.absdiff(targetImage, backGroundImage)
+
+
 		errorMapImg = cv2.cvtColor(errorMapImg, cv2.COLOR_BGR2GRAY)
 
 		self.RawErrorImg = cv2.resize(errorMapImg, (fullW, fullH))
+		self.Errors = errorMapImg.flatten()
+		self.Errors = np.array(self.Errors)
 
 		errorMapImg = cv2.medianBlur(errorMapImg, self.ErrorMaskBlurValue)
-
-		self.Errors = errorMapImg.flatten()
 		self.ErrorMapImg = cv2.resize(errorMapImg, (fullW, fullH))
 		return
 
 	def PredictMaxErrorAllowed(self):
-		self.MaxErrorAllowed = np.percentile(np.array(self.Errors), 95)
-		self.MaxErrorAllowed = np.mean(np.array(self.Errors))
+		self.MaxErrorAllowed = np.mean(self.Errors)
+		self.MaxErrorAllowed = max(self.MaxErrorAllowed, 20)
 		return
 
 	def CutOut(self):
@@ -74,9 +81,13 @@ class BackgroundRemover:
 		return
 
 	def ShowErrorPlot(self):
+		plt.clf()
 		plt.hist(self.Errors, bins = 100)
 		plt.axvline(self.MaxErrorAllowed, color='r')
-		plt.show()
+		x1,x2,y1,y2 = plt.axis()
+		plt.axis((0,255,y1,y2))
+		plt.draw()
+		plt.pause(0.001)
 		return
 
 
@@ -101,7 +112,7 @@ if __name__ == "__main__":
 		backGroundImage = cv2.resize(backGroundImage, (fullH, fullW))
 		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
 
-		backgroundRemover = BackgroundRemover()
+		backgroundRemover = BackgroundRemover(errorDataBatchSize=1)
 
 		# totalTook = time.time()
 		# outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
@@ -123,7 +134,9 @@ if __name__ == "__main__":
 
 			outputImage = backgroundRemover.ReplaceBackGround(frame, backGroundImage, newBackgroundImage)
 			cv2.imshow('ErrorMapImg', backgroundRemover.ErrorMapImg)
+			cv2.imshow('RawErrorImg', backgroundRemover.RawErrorImg)
 			cv2.imshow('outputImage', outputImage)
+			backgroundRemover.ShowErrorPlot()
 				
 
 	
