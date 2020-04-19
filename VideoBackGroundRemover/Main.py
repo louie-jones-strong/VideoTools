@@ -112,17 +112,19 @@ if __name__ == "__main__":
 		# backgroundRemover.Show()
 
 		cap = cv2.VideoCapture(1)
-		for loop in range(100):
-			ret, backGroundImage = cap.read()
+		ret, backGroundImage = cap.read()
 		fullW = backGroundImage.shape[0]
 		fullH = backGroundImage.shape[1]
 		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
 		while True:
 			ret, frame = cap.read()
+			if cv2.waitKey(1) & 0xFF == ord('q'):
+				backGroundImage = frame
 
 			outputImage = backgroundRemover.ReplaceBackGround(frame, backGroundImage, newBackgroundImage)
+			cv2.imshow('ErrorMapImg', backgroundRemover.ErrorMapImg)
 			cv2.imshow('outputImage', outputImage)
-			cv2.waitKey(1)
+				
 
 	
 
