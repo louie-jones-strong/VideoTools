@@ -100,7 +100,7 @@ if __name__ == "__main__":
 		backGroundImage = cv2.resize(backGroundImage, (fullH, fullW))
 		newBackgroundImage = cv2.resize(newBackgroundImage, (fullH, fullW))
 
-		backgroundRemover = BackgroundRemover(30)
+		backgroundRemover = BackgroundRemover()
 
 		totalTook = time.time()
 		outputImage = backgroundRemover.ReplaceBackGround(targetImage, backGroundImage, newBackgroundImage)
