@@ -52,8 +52,8 @@ class BackgroundRemover:
 		return
 
 	def PredictMaxErrorAllowed(self):
-		mean = np.mean(np.array(self.Errors))
-		self.MaxErrorAllowed = mean
+		self.MaxErrorAllowed = np.percentile(np.array(self.Errors), 95)
+		self.MaxErrorAllowed = np.mean(np.array(self.Errors))
 		return
 
 	def CutOut(self):
@@ -75,6 +75,7 @@ class BackgroundRemover:
 
 	def ShowErrorPlot(self):
 		plt.hist(self.Errors, bins = 100)
+		plt.axvline(self.MaxErrorAllowed, color='r')
 		plt.show()
 		return
 
