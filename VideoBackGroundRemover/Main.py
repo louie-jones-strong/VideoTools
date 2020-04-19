@@ -42,8 +42,6 @@ class BackgroundRemover:
 		targetImage = cv2.resize(self.TargetImage, (newWidth, newHigh))
 		backGroundImage = cv2.resize(self.BackGroundImage, (newWidth, newHigh))
 
-		targetImage = cv2.cvtColor(targetImage, cv2.COLOR_BGR2HSV)
-		backGroundImage = cv2.cvtColor(backGroundImage, cv2.COLOR_BGR2HSV)
 
 		errorMapImg = cv2.absdiff(targetImage, backGroundImage)
 
