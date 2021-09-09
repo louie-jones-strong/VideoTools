@@ -48,13 +48,13 @@ def ResizeFolder(path, files, newResolutions):
 
 if __name__ == "__main__":
 
-	print("agrs: " + str(sys.argv))
 
-	path = sys.argv[1]
-
-	print("path: " + path)
+	path = input("path: ")
 	files = os.listdir(path)
 
-	newResolutions = [(1920, 1080), (960, 540), (480, 270)]
+	xRes = int(input("Resolution x: "))
+	yRes = int(input("Resolution y: "))
+
+	newResolutions = [(xRes, yRes)]
 	print("newResolution: " + str(newResolutions))
 	ResizeFolder(path, files, newResolutions)
